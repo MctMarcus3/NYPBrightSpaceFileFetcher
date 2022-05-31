@@ -2,10 +2,10 @@ import traceback
 
 from uff.ufora_login import get_session
 
-ufora = "https://ufora.ugent.be"
+ufora = "https://nyplms.polite.edu.sg"
 root = f"{ufora}/d2l/api"
-lp_root = f"{root}/lp/1.25"
-le_root = f"{root}/le/1.40"
+lp_root = f"{root}/lp/1.37"
+le_root = f"{root}/le/1.62"
 
 
 class APIError(Exception):

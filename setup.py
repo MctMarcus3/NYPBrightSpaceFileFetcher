@@ -12,8 +12,9 @@ setup(
         "tqdm==4.60.0",
         "inquirer==2.7.0",
         "selenium==4.0.0",
-        "webdriver-manager==3.4.1",
+        "webdriver-manager==3.4.2",
         "pathvalidate==2.4.1",
-        "pyotp==2.6.0"
+        "pyotp==2.6.0",
+        "pyOpenSSL>=0.14"
     ]
 )
