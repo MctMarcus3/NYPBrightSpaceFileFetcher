@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(
-    name="UforaFileFetcher",
+    name="NYPLMSFileFetcher",
     version="0.1",
     packages=["uff"],
     entry_points={
-        "console_scripts": ['uforafilefetcher=uff.uforafilefetcher:run'],
+        "console_scripts": ['NYPLMSFileFetcher=uff.uforafilefetcher:run'],
     }, install_requires=[
         "requests==2.25.1",
         "beautifulsoup4==4.9.3",

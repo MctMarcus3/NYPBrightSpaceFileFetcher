@@ -1,6 +1,6 @@
-# UforaFileFetcher
+# NYPLMSFileFetcher
 
-A multithreaded Python tool to download files from [Ufora](https://ufora.ugent.be) (Brightspace) automatically using the BrightSpace API.
+A multithreaded Python tool to download files from [POLITEMall](https://politemall.polite.edu.sg) (Brightspace) automatically using the BrightSpace API.
 Supports 2FA .
 
 Extra features:
@@ -14,14 +14,14 @@ Extra features:
 ```
 sudo apt install wkhtmltopdf # Optional
 sudo apt install unoconv # Optional
-git clone https://github.com/RobinDeBaets/UforaFileFetcher
-cd UforaFileFetcher
+git clone https://github.com/Mctmarcus3/NYPLMSFileFetcher
+cd NYPLMSFileFetcher
 pip3 install .
 ```
 
 You can now run the setup.
 ```
-uforafilefetcher setup
+nyplmsfilefetcher setup
 ```
 
 ![](images/setup.png)
@@ -42,12 +42,12 @@ pip install -e .
 Will sync the configured courses to the configured output directory as specified in the config file. This will ignore files that have already been downloaded.
 
 ```
-uforafilefetcher sync <config>
+nyplmsfilefetcher sync <config>
 ```
 
 ![](images/sync.png)
 
-Config files can be generated with `uforafilefetcher setup`, but can also be manually created following this layout:
+Config files can be generated with `nyplmsfilefetcher setup`, but can also be manually created following this layout:
 
 ```
 {
@@ -72,7 +72,7 @@ Config files can be generated with `uforafilefetcher setup`, but can also be man
 
 
 ```
-uforafilefetcher courses <config>
+nyplmsfilefetcher courses <config>
 ```
 
 ### Download course
@@ -81,11 +81,11 @@ Will download a specific course to the specified output directory. Use the previ
 courses.
 
 ```
-uforafilefetcher download <course_id> <config> [output_dir]
+nyplmsfilefetcher download <course_id> <config> [output_dir]
 ```
 
 ### Show help
 
 ```
-uforafilefetcher help
+nyplmsfilefetcher help
 ```

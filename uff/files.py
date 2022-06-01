@@ -11,7 +11,9 @@ from uff.utils import create_filename, create_filepath, download_from_url, creat
 def get_module(brightspace_api, module_id, course_id):
     return brightspace_api.session.get(f"{le_root}/{course_id}/content/modules/{module_id}/structure/").json()
 
-
+def get_dropbox(brightspace_api, course_id):
+    return brightspace_api.session.get(f"{le_root}/{course_id}/dropbox/folders/").json()
+    
 def download_files(brightspace_api, course_id, output_dir, download_pool):
     course = get_course(brightspace_api, course_id)
     if course is None:
@@ -28,29 +30,37 @@ def download_files(brightspace_api, course_id, output_dir, download_pool):
         thread.join()
 
 
-def create_metadata(filepath, description, title):
+def create_metadata(filepath, description, title, last_updated=None):
     if not os.path.isfile(filepath):
         # Only create metadata if it doesn't exist
         os.makedirs("/".join(filepath.split("/")[:-1]), exist_ok=True)
+        # htmlFilePath = f"{filepath}.html"
+        # with open(htmlFilePath, "w") as f: 
         print("Creating metadata " + filepath.split("/")[-1])
+            # f.write(f"""<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css"><base href={ufora}><style>body{{background:white}}</style><h1>{title}</h1>{description}""")
         pdf_wrapper.from_string(
             f"""<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css"><base href={ufora}><style>body{{background:white}}</style><h1>{title}</h1>{description}""",
             filepath)
 
 
-def download_file(brightspace_api, item, path, course, output_dir):
+def download_file(brightspace_api, item, path, course, output_dir, course_id=None, dropbox=None):
     filepath = create_filepath(course, path)
     description = item["Description"]["Html"]
     topic_type = item["TopicType"]
     title = item["Title"]
     url = item["Url"]
+    """
+    Refer to 
+    https://docs.valence.desire2learn.com/res/content.html?highlight=get%20attach#term-ACTIVITYTYPE_T
+    For Topic_Type
+    """
     if topic_type == 1:
         filename = create_filename(item)
         filename_without_extension = ".".join(filename.split(".")[:-1])
         full_path = f"{output_dir}/{filepath}/{filename}"
         # These documents are regular files that we want to download
         download_from_url(brightspace_api, f"""{ufora}{url}""", full_path)
-        if url.endswith(".html"):
+        if url.endswith(".html") and not path.exists(filepath):
             # HTML files on Ufora need a little special treatment
             # We'll prepend a title, <base> tag and convert them to pdf
             with open(full_path, "r") as f:
@@ -71,10 +81,28 @@ def download_file(brightspace_api, item, path, course, output_dir):
                 convert_to_pdf(full_path, new_pdf_path)
 
     elif topic_type == 3:
-        # These documents are just clickable links, we'll render them in a pdf
+        """
+        Documentation: https://docs.valence.desire2learn.com/res/dropbox.html 
+        """
+
+        #Creates the file with title
         filename = create_filename_without_extension(item)
         full_path = f"{output_dir}/{filepath}/{filename}"
-        create_metadata(f"{full_path}.pdf", f"<a href={url}>{url}</a>{description}", item["Title"])
+        
+        #Downloads attachments from DropBox
+        dropboxitem = next((dropboxitem for dropboxitem in dropbox if dropboxitem['Id'] == item["ToolItemId"]), None)
+        if dropboxitem is None or dropboxitem["Attachments"] is None:
+            create_metadata(f"{full_path}", f"<a href={url}>{url}</a>{description}", item["Title"])
+            exit()
+        create_metadata(f"{full_path}/{filename}", f"<a href={url}>{url}</a>{description}", item["Title"])
+        folder_id = dropboxitem["Id"]
+        for file in dropboxitem["Attachments"]:
+            file_id = file["FileId"]
+            filename = file["FileName"]
+            full_path = f"{full_path}/{filename}"
+            print(f"{le_root}/{course_id}/dropbox/folders/{folder_id}/attachments/{file_id}")
+            download_from_url(brightspace_api, f"""{le_root}/{course_id}/dropbox/folders/{folder_id}/attachments/{file_id}""", full_path)
+
     else:
         print(f"Don't know this topic type: {topic_type}")
         exit()
@@ -90,7 +118,7 @@ def download_module(item, path, course, output_dir):
 
 def traverse_element(brightspace_api, item, course_id, path, course, output_dir, download_pool):
     if item["Type"] == 1:
-        download_pool.submit(download_file, brightspace_api, item, path, course, output_dir)
+        download_pool.submit(download_file, brightspace_api, item, path, course, output_dir, course_id, get_dropbox(brightspace_api, course_id))
     else:
         path.append(item)
         download_module(item, path, course, output_dir)

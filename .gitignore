@@ -6,7 +6,7 @@ config.json
 *pyc
 build
 dist
-UforaFileFetcher.egg-info
+NYPLMSFileFetcher.egg-info
 output
 .tmp.driveupload
 .env

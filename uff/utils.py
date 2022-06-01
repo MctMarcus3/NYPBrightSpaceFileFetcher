@@ -29,7 +29,7 @@ def create_filename_without_extension(item):
     return sanitize_filename(item["Title"])
 
 
-def download_from_url(brightspace_api, url, filepath):
+def download_from_url(brightspace_api, url, filepath, lastModified=None):
     if not path.exists(filepath):
         # Only download file if it doesn't exist
         os.makedirs("/".join(filepath.split("/")[:-1]), exist_ok=True)
