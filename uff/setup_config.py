@@ -26,13 +26,9 @@ def setup():
     defaultDirPath = "../" if os.name == "posix" else "..\\"
     config_file = inquirer.filepath(
         message="Specify config file location",
-        default=defaultConfigPath,
-        validate=PathValidator(message="Input is not a file")).execute()
-    print(config_file, type(config_file))
+        default=defaultConfigPath).execute()
     output_directory=inquirer.filepath(
         message="Specify output directory", 
-        only_directories=True, 
-        validate=PathValidator(message="Input is not a directory"), 
         default=defaultDirPath).execute()
     brightspace_api=BrightspaceAPI(email, password, otc_secret)
     courses=get_courses_list(brightspace_api)
