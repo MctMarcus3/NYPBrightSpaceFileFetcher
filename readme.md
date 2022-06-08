@@ -51,7 +51,7 @@ Config files can be generated with `nyplmsfilefetcher setup`, but can also be ma
 
 ```
 {
-    "output_directory": "~/university/ufora/",
+    "output_directory": "./Modules/",
     "courses": [
         438620,
         442195,
@@ -59,9 +59,10 @@ Config files can be generated with `nyplmsfilefetcher setup`, but can also be ma
         450000
     ],
     "credentials": {
-        "email": "foo.bar@ugent.be",
+        "email": "foo.bar@mymail.nyp.edu.sg",
         "password": "azerty123",
         "otc_secret": "pppmmmvvv"
+        "browser": "chrome"
     }
 }
 
