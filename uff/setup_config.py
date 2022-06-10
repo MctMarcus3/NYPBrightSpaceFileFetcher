@@ -32,7 +32,7 @@ def setup():
         default=defaultDirPath).execute()
     brightspace_api=BrightspaceAPI(email, password, otc_secret)
     courses=get_courses_list(brightspace_api)
-    selected_courses=inquirer.checkbox(message="Select courses to sync (press enter when ready)",
+    selected_courses=inquirer.checkbox(message="Select courses to sync\nMove - Arrow Keys\nSpace - Select\nEnter - ready",
                                          choices=courses
                                          ).execute()
 
