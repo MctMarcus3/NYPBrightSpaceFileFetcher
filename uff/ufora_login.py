@@ -19,9 +19,6 @@ def get_cookie(url: str, default_browser: Optional[str] = None) -> CookieJar or 
     """
     Attempts to get a User Login Session from a Browser
     """
-    urlobj = urlparse(url)
-    learn_domain = urlobj.hostname
-    print(learn_domain)
     browsers = {
         "chrome": browser_cookie3.chrome,
         "firefox": browser_cookie3.firefox,
@@ -37,11 +34,12 @@ def get_cookie(url: str, default_browser: Optional[str] = None) -> CookieJar or 
                 f"Attempting to get cookies for {learn_domain} from browser: {browser_name}")
             ret = browser_fn(domain_name=learn_domain)
             print(f"Grabbed Cookies for \"{learn_domain}\" from browser: {browser_name}")
-            if len(ret) == 0:
+            if len(list(ret)) == 0:
                 return None
             return ret
         except Exception:
             print(f"Failed to Grab Cookies for Browser: {browser_name}")
+            return None
 
     if default_browser is not None:
         # Use Provided Arg
@@ -121,13 +119,21 @@ def create_session(email, password, otc_secret):
 
 
 def get_session(email=None, password=None, otc_secret=None, browser=None) -> requests.Session:
-    cookiejar = get_cookie(LOGIN_URL, browser)
+    urlobj = urlparse(LOGIN_URL)
+    learn_domain = urlobj.hostname
+    cookiejar = get_cookie(learn_domain, browser)
     session = None
+    
     if cookiejar is None:
         session = create_session(email, password, otc_secret)
     else: 
         session = requests.Session()
         session.cookies = cookiejar
+        
+        # Check if session is valid
+        session.get(f"{learn_domain}/d2l/api/lp/1.25/enrollments/myenrollments/")
+        if session.status_code == 404:
+            session = create_session(email, password, otc_secret)
     return session
 
     
