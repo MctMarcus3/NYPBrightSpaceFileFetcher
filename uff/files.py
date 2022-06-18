@@ -100,7 +100,6 @@ def download_file(brightspace_api, item, path, course, output_dir, course_id=Non
             file_id = file["FileId"]
             filename = file["FileName"]
             full_path = f"{full_path}/{filename}"
-            print(f"{le_root}/{course_id}/dropbox/folders/{folder_id}/attachments/{file_id}")
             download_from_url(brightspace_api, f"""{le_root}/{course_id}/dropbox/folders/{folder_id}/attachments/{file_id}""", full_path)
 
     else:
