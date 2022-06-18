@@ -92,9 +92,9 @@ def download_file(brightspace_api, item, path, course, output_dir, course_id=Non
         #Downloads attachments from DropBox
         dropboxitem = next((dropboxitem for dropboxitem in dropbox if dropboxitem['Id'] == item["ToolItemId"]), None)
         if dropboxitem is None or dropboxitem["Attachments"] is None:
-            create_metadata(f"{full_path}", f"<a href={url}>{url}</a>{description}", item["Title"])
+            create_metadata(f"{full_path}.pdf", f"<a href={url}>{url}</a>{description}", item["Title"])
             exit()
-        create_metadata(f"{full_path}/{filename}", f"<a href={url}>{url}</a>{description}", item["Title"])
+        create_metadata(f"{full_path}/{filename}.pdf", f"<a href={url}>{url}</a>{description}", item["Title"])
         folder_id = dropboxitem["Id"]
         for file in dropboxitem["Attachments"]:
             file_id = file["FileId"]
