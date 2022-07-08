@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name="NYPLMSFileFetcher",
-    version="0.1.1",
+    version="0.1.2",
     packages=["uff"],
     entry_points={
         "console_scripts": ['NYPLMSFileFetcher=uff.uforafilefetcher:run'],
