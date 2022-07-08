@@ -2,8 +2,7 @@ import json
 import os
 import re
 import string
-
-from datetime import datetime 
+from datetime import date, datetime 
 from json import JSONDecodeError
 from os import path
 from pathvalidate import sanitize_filename
@@ -31,15 +30,20 @@ def create_filename_without_extension(item):
 
 def download_from_url(brightspace_api, url, filepath, lastModified=None):
     # Parse LastModified to Epoch Timestamp
-    parsed_datetime = None
+    dtLastModified = None
     fsLastModified = None
+    unix_dtLastModified = None
     if lastModified is not None:
-        parsed_datetime = datetime.strptime(lastModified, "%Y-%m-%dT%H:%M:%S.%fZ")
+        dtLastModified = datetime.strptime(lastModified, "%Y-%m-%dT%H:%M:%S.%fZ")
+        unix_dtLastModified = int(datetime.timestamp(dtLastModified))
     if path.exists(filepath): 
-        fsLastModified = os.path.getmtime(filepath)
-        if parsed_datetime is not None and fsLastModified is not None:
-            if parsed_datetime > fsLastModified:
-                os.rename(filepath, f"{fsLastModified}_{filepath}")
+        fsLastModified = int(os.path.getmtime(filepath))
+        if unix_dtLastModified is not None and fsLastModified is not None:
+            if unix_dtLastModified > fsLastModified:
+                print(
+                    f"fp: {filepath} unixlm: {unix_dtLastModified}, fs: {fsLastModified}")
+                pre, ext = os.path.splitext(filepath)
+                os.rename(filepath, f"{pre}_{fsLastModified}{ext}")
     if not path.exists(filepath):
         # Only download file if it doesn't exist
         os.makedirs("/".join(filepath.split("/")[:-1]), exist_ok=True)
@@ -54,7 +58,7 @@ def download_from_url(brightspace_api, url, filepath, lastModified=None):
                         f.write(chunk)
                         pbar.update(1024)
             pbar.update(file_size)
-        os.utime(filepath, (datetime.now().timestamp(), round(parsed_datetime.timestamp())))
+        os.utime(filepath, (datetime.now().timestamp(), round(dtLastModified.timestamp())))
         return True
     return False
 
