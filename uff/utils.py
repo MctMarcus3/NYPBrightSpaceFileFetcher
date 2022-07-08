@@ -2,10 +2,11 @@ import json
 import os
 import re
 import string
+
+from datetime import datetime 
 from json import JSONDecodeError
 from os import path
 from pathvalidate import sanitize_filename
-
 from tqdm import tqdm
 
 # Some courses have an annoying prefix, we'll ignore it
@@ -28,8 +29,17 @@ def create_filename(item):
 def create_filename_without_extension(item):
     return sanitize_filename(item["Title"])
 
-
 def download_from_url(brightspace_api, url, filepath, lastModified=None):
+    # Parse LastModified to Epoch Timestamp
+    parsed_datetime = None
+    fsLastModified = None
+    if lastModified is not None:
+        parsed_datetime = datetime.strptime(lastModified, "%Y-%m-%dT%H:%M:%S.%fZ")
+    if path.exists(filepath): 
+        fsLastModified = os.path.getmtime(filepath)
+        if parsed_datetime is not None and fsLastModified is not None:
+            if parsed_datetime > fsLastModified:
+                os.rename(filepath, f"{fsLastModified}_{filepath}")
     if not path.exists(filepath):
         # Only download file if it doesn't exist
         os.makedirs("/".join(filepath.split("/")[:-1]), exist_ok=True)
@@ -44,6 +54,7 @@ def download_from_url(brightspace_api, url, filepath, lastModified=None):
                         f.write(chunk)
                         pbar.update(1024)
             pbar.update(file_size)
+        os.utime(filepath, (datetime.now().timestamp(), round(parsed_datetime.timestamp())))
         return True
     return False
 
@@ -56,3 +67,4 @@ def get_config(config_file):
     except JSONDecodeError:
         print(f"File {config_file} is not a valid json file")
     exit()
+

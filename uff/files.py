@@ -38,9 +38,10 @@ def create_metadata(filepath, description, title, last_updated=None):
         # with open(htmlFilePath, "w") as f: 
         print("Creating metadata " + filepath.split("/")[-1])
             # f.write(f"""<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css"><base href={ufora}><style>body{{background:white}}</style><h1>{title}</h1>{description}""")
+        pdffilepath = f"{filepath}.pdf"
         pdf_wrapper.from_string(
             f"""<link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" type="text/css"><base href={ufora}><style>body{{background:white}}</style><h1>{title}</h1>{description}""",
-            filepath)
+            pdffilepath)
 
 
 def download_file(brightspace_api, item, path, course, output_dir, course_id=None, dropbox=None):
@@ -51,15 +52,16 @@ def download_file(brightspace_api, item, path, course, output_dir, course_id=Non
     url = item["Url"]
     """
     Refer to 
-    https://docs.valence.desire2learn.com/res/content.html?highlight=get%20attach#term-ACTIVITYTYPE_T
+    https://docs.valence.desire2learn.com/res/content.html?highlight=get%20attach#term-TOPIC_T    
     For Topic_Type
     """
     if topic_type == 1:
         filename = create_filename(item)
         filename_without_extension = ".".join(filename.split(".")[:-1])
         full_path = f"{output_dir}/{filepath}/{filename}"
+        lastModifiedDate = item["LastModifiedDate"]
         # These documents are regular files that we want to download
-        download_from_url(brightspace_api, f"""{ufora}{url}""", full_path)
+        download_from_url(brightspace_api, f"""{ufora}{url}""", full_path, lastModifiedDate)
         if url.endswith(".html") and not path.exists(filepath):
             # HTML files on Ufora need a little special treatment
             # We'll prepend a title, <base> tag and convert them to pdf
@@ -72,11 +74,11 @@ def download_file(brightspace_api, item, path, course, output_dir, course_id=Non
             with open(full_path, "w") as f:
                 f.write(new_content)
         elif description:
-            description_path = f"{output_dir}/{filepath}/{filename_without_extension}_metadata.pdf"
+            description_path = f"{output_dir}/{filepath}/{filename_without_extension}_metadata"
             create_metadata(description_path, description, filename_without_extension)
         if url.endswith(".pptx") or url.endswith(".ppt"):
             # ppt and pptx files can be converted to PDF if unoconv is present
-            new_pdf_path = f"{output_dir}/{filepath}/{filename_without_extension}_converted.pdf"
+            new_pdf_path = f"{output_dir}/{filepath}/{filename_without_extension}_converted"
             if not os.path.isfile(new_pdf_path):
                 convert_to_pdf(full_path, new_pdf_path)
 
@@ -91,8 +93,8 @@ def download_file(brightspace_api, item, path, course, output_dir, course_id=Non
         
         #Downloads attachments from DropBox
         dropboxitem = next((dropboxitem for dropboxitem in dropbox if dropboxitem['Id'] == item["ToolItemId"]), None)
-        if dropboxitem is None or dropboxitem["Attachments"] is None:
-            create_metadata(f"{full_path}.pdf", f"<a href={url}>{url}</a>{description}", item["Title"])
+        if item["ActivityType"] != 3:
+            create_metadata(f"{full_path}", f"<a href={url}>{url}</a>{description}", item["Title"])
             exit()
         create_metadata(f"{full_path}/{filename}.pdf", f"<a href={url}>{url}</a>{description}", item["Title"])
         folder_id = dropboxitem["Id"]

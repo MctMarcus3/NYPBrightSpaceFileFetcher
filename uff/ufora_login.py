@@ -27,13 +27,12 @@ def get_cookie(url: str, default_browser: Optional[str] = None) -> CookieJar or 
         "chromium": browser_cookie3.chromium,
         "unknown": browser_cookie3.load
     }
-
     def get_cookies_from_browser(browser_name: str, browser_fn: Callable[..., CookieJar]):
         try:
             print(
-                f"Attempting to get cookies for {learn_domain} from browser: {browser_name}")
-            ret = browser_fn(domain_name=learn_domain)
-            print(f"Grabbed Cookies for \"{learn_domain}\" from browser: {browser_name}")
+                f"Attempting to get cookies for {url} from browser: {browser_name}")
+            ret = browser_fn(domain_name=url)
+            print(f"Grabbed Cookies for \"{url}\" from browser: {browser_name}")
             if len(list(ret)) == 0:
                 return None
             return ret
@@ -121,19 +120,24 @@ def create_session(email, password, otc_secret):
 def get_session(email=None, password=None, otc_secret=None, browser=None) -> requests.Session:
     urlobj = urlparse(LOGIN_URL)
     learn_domain = urlobj.hostname
-    cookiejar = get_cookie(learn_domain, browser)
     session = None
-    
-    if cookiejar is None:
-        session = create_session(email, password, otc_secret)
-    else: 
+    if browser is not None:
+        cookiejar = get_cookie(learn_domain, browser)
         session = requests.Session()
         session.cookies = cookiejar
-        
-        # Check if session is valid
-        session.get(f"{learn_domain}/d2l/api/lp/1.25/enrollments/myenrollments/")
-        if session.status_code == 404:
-            session = create_session(email, password, otc_secret)
+    
+    if email is not None:
+        session = create_session(email, password, otc_secret)
+
+    # Check if session is valid
+    currSession = session.get(
+        f"{urlobj.scheme}://{learn_domain}/d2l/api/lp/1.25/enrollments/myenrollments/")
+    print(session)
+    if currSession.status_code == 404 and email is not None:
+        session = create_session(email, password, otc_secret)
+    elif currSession.status_code == 404 and browser is not None:
+        session = create_session(browser=browser)
+    
     return session
 
     

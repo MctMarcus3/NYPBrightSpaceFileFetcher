@@ -9,18 +9,27 @@ from uff.ufora_login import get_session
 
 
 def setup():
-    email = inquirer.text(message="What's your email address").execute()
-    password = inquirer.secret(message="What's your password").execute()
-    otc_secret = inquirer.secret(message="What's your 2FA secret?", default="").execute()
-    browser = inquirer.select(message="What's your browser (Used to get cookie from brightspace)?", choices=[
+    driverless, browser, session = False, False, None
+    email, password, otc_secret, session = None, None, None, None
+    driverless = inquirer.confirm(message="Driverless Setup without Selerium?", default=False).execute()
+    if not driverless: 
+        email = inquirer.text(message="What's your email address").execute()
+        password = inquirer.secret(message="What's your password").execute()
+        otc_secret = inquirer.secret(message="What's your 2FA secret?", default="").execute()
+        session = get_session(email, password, otc_secret)
+    browserSetup = inquirer.confirm(message="Setup Browser?", default=False).execute()
+    if browserSetup:
+        browser = inquirer.select(message="What's your browser (Used to get cookie from brightspace)?", choices=[
                                                                           "Chrome",
                                                                           "Firefox",
                                                                           "Edge",
                                                                           "Opera",
                                                                           "Chromium"]).execute()
-    session = get_session(email, password, otc_secret)
+        inquirer.confirm(message=f"Ensure that you are logged in to {browser}", default=False).execute()
+        session = get_session(browser=browser)
+
     if session is None:
-        print("Invalid login credentials")
+        print("Invalid login credentials/Not logged in to Brightspace LMS")
         return
     defaultConfigPath = "./config.json" if os.name == "posix" else ".\\config.json"
     defaultDirPath = "../" if os.name == "posix" else "..\\"
@@ -30,7 +39,7 @@ def setup():
     output_directory=inquirer.filepath(
         message="Specify output directory", 
         default=defaultDirPath).execute()
-    brightspace_api=BrightspaceAPI(email, password, otc_secret)
+    brightspace_api=BrightspaceAPI(email, password, otc_secret, browser)
     courses=get_courses_list(brightspace_api)
     selected_courses=inquirer.checkbox(message="Select courses to sync\nMove - Arrow Keys\nSpace - Select\nEnter - ready",
                                          choices=courses

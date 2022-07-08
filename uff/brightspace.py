@@ -30,4 +30,4 @@ class BrightspaceAPI:
     @staticmethod
     def from_config(config):
         credentials = config["credentials"]
-        return BrightspaceAPI(credentials.get("email"), credentials.get("password"), credentials.get("otc_secret"), browser=credentials.get("browser"))
+        return BrightspaceAPI(credentials.get("email"), credentials.get("password"), credentials.get("otc_secret"), credentials.get("browser"))
