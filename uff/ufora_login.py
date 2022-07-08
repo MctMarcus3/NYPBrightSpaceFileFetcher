@@ -132,7 +132,6 @@ def get_session(email=None, password=None, otc_secret=None, browser=None) -> req
     # Check if session is valid
     currSession = session.get(
         f"{urlobj.scheme}://{learn_domain}/d2l/api/lp/1.25/enrollments/myenrollments/")
-    print(session)
     if currSession.status_code == 404 and email is not None:
         session = create_session(email, password, otc_secret)
     elif currSession.status_code == 404 and browser is not None:
